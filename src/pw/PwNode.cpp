@@ -1,0 +1,144 @@
+#include "PwNode.hpp"
+#include "PwState.hpp"
+#include "../ui/UI.hpp"
+#include "../helpers/Log.hpp"
+
+extern "C" {
+#include <pipewire/pipewire.h>
+#include <spa/utils/defs.h>
+#include <spa/utils/hook.h>
+#include <spa/utils/result.h>
+#include <spa/param/param.h>
+#include <spa/param/props.h>
+#include <spa/pod/iter.h>
+#include <spa/pod/parser.h>
+#include <spa/pod/pod.h>
+#include <spa/pod/builder.h>
+}
+
+static const char* prop(const spa_dict* props, const char* key) {
+    if (!props)
+        return nullptr;
+    const spa_dict_item* it;
+    spa_dict_for_each(it, props) {
+        if (std::string_view(it->key) == key)
+            return it->value;
+    }
+    return nullptr;
+}
+
+static void onNodeInfo(void* data, const pw_node_info* info) {
+    ;
+}
+
+static void onNodeParam(void* data, int seq, uint32_t id, uint32_t index, uint32_t next, const spa_pod* param) {
+    CPipewireNode*      node = (CPipewireNode*)data;
+
+    const spa_pod_prop* p;
+    spa_pod_object*     obj = (spa_pod_object*)param;
+
+    SPA_POD_OBJECT_FOREACH(obj, p) {
+        if (p->key == SPA_PROP_channelVolumes) {
+            if (spa_pod_is_array(&p->value)) {
+                uint32_t     n = SPA_POD_ARRAY_N_VALUES(&p->value);
+                const float* v = (const float*)SPA_POD_ARRAY_VALUES(&p->value);
+
+                node->m_channelCount = n;
+                node->m_volume       = v[0];
+            }
+
+            continue;
+        }
+
+        // FIXME: this is broken?
+        // if (p->key == SPA_PROP_softMute) {
+        //     if (spa_pod_is_bool(&p->value))
+        //         node->m_muted = SPA_POD_Bool(&p->value);
+
+        //     continue;
+        // }
+    }
+
+    g_ui->updateNode(node->m_self);
+
+    Debug::log(ERR, "Node {} has no volume", node->m_name);
+}
+
+static const pw_node_events NODE_EVENTS = {
+    .version = PW_VERSION_NODE_EVENTS,
+    .info    = onNodeInfo,
+    .param   = onNodeParam,
+};
+
+CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props) : m_id(id) {
+    auto        mc  = prop(props, PW_KEY_MEDIA_CLASS);
+    const char* nm  = prop(props, PW_KEY_NODE_NAME);
+    const char* dsc = prop(props, PW_KEY_NODE_DESCRIPTION);
+    if (!mc)
+        return;
+    if (!std::string_view{mc}.starts_with("Audio/"))
+        return;
+
+    m_name       = dsc ? dsc : (nm ? nm : "");
+    m_mediaClass = mc;
+    m_proxy      = sc<pw_node*>(pw_registry_bind(g_pipewire->m_pwState.registry, id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0));
+
+    spa_zero(m_listener);
+    pw_node_add_listener(m_proxy, &m_listener, &NODE_EVENTS, this);
+
+    pw_node_enum_params(m_proxy, 0, SPA_PARAM_Props, 0, UINT32_MAX, nullptr);
+
+    uint32_t ids[] = {SPA_PARAM_Props};
+    pw_node_subscribe_params(m_proxy, ids, 1);
+}
+
+CPipewireNode::~CPipewireNode() {
+    if (g_ui)
+        g_ui->nodeRemoved(m_self);
+
+    if (!m_proxy)
+        return;
+
+    pw_proxy_destroy(rc<pw_proxy*>(m_proxy));
+}
+
+void CPipewireNode::setVolume(float x) {
+    std::vector<float> volumes;
+    volumes.resize(m_channelCount);
+    for (size_t i = 0; i < m_channelCount; i++) {
+        volumes.at(i) = x;
+    }
+
+    uint8_t         buffer[1024];
+    spa_pod_builder builder;
+    spa_pod_builder_init(&builder, buffer, sizeof(buffer));
+
+    struct spa_pod_frame object_frame;
+    spa_pod_builder_push_object(&builder, &object_frame, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props);
+
+    spa_pod_builder_prop(&builder, SPA_PROP_channelVolumes, 0);
+    spa_pod_builder_array(&builder, sizeof(float), SPA_TYPE_Float, volumes.size(), volumes.data());
+
+    const spa_pod* pod = rc<spa_pod*>(spa_pod_builder_pop(&builder, &object_frame));
+
+    pw_node_set_param(m_proxy, SPA_PARAM_Props, 0, pod);
+}
+
+void CPipewireNode::setMute(bool x) {
+    uint8_t         buffer[1024];
+    spa_pod_builder builder;
+    spa_pod_builder_init(&builder, buffer, sizeof(buffer));
+
+    struct spa_pod_frame object_frame;
+    spa_pod_builder_push_object(&builder, &object_frame, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props);
+
+    spa_pod_builder_prop(&builder, SPA_PROP_softMute, 0);
+    spa_pod_builder_bool(&builder, x);
+
+    const spa_pod* pod = rc<spa_pod*>(spa_pod_builder_pop(&builder, &object_frame));
+
+    pw_node_set_param(m_proxy, SPA_PARAM_Props, 0, pod);
+
+    m_muted = x;
+    g_ui->updateNode(m_self);
+}

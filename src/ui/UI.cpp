@@ -1,0 +1,156 @@
+#include "UI.hpp"
+#include "NodeVolumeSlider.hpp"
+#include "../pw/PwState.hpp"
+
+using namespace Hyprutils::Math;
+
+constexpr float MAIN_PADDING  = 10;
+constexpr float SMALL_PADDING = 6;
+
+CUI::CUI() {
+    m_backend = Hyprtoolkit::CBackend::create();
+    m_window  = m_backend->openWindow(Hyprtoolkit::SWindowCreationData{
+         .title  = "Pipewire Control Center",
+         .class_ = "hyprpwcenter",
+    });
+
+    m_background = Hyprtoolkit::CRectangleBuilder::begin()->color([this] { return m_backend->getPalette()->m_colors.background; })->commence();
+
+    m_layout = Hyprtoolkit::CColumnLayoutBuilder::begin()
+                   ->gap(SMALL_PADDING)
+                   ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                   ->commence();
+    m_layout->setMargin(MAIN_PADDING);
+
+    m_tabs.buttonLayout = Hyprtoolkit::CRowLayoutBuilder::begin()
+                              ->gap(SMALL_PADDING)
+                              ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, 30.F}})
+                              ->commence();
+
+    m_tabs.tabContainer = Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})->commence();
+    m_tabs.tabContainer->setGrow(true);
+
+    m_tabs.nodesTab.nodesLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
+                                      ->gap(SMALL_PADDING)
+                                      ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                      ->commence();
+
+    m_tabs.inputsTab.inputsLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
+                                        ->gap(SMALL_PADDING)
+                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                        ->commence();
+
+    m_tabs.nodesButton = Hyprtoolkit::CButtonBuilder::begin()
+                             ->label("Nodes")
+                             ->noBorder(true)
+                             ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(0); })
+                             ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
+                             ->commence();
+
+    m_tabs.inputsButton = Hyprtoolkit::CButtonBuilder::begin()
+                              ->label("Inputs")
+                              ->noBorder(true)
+                              ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(1); })
+                              ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
+                              ->commence();
+
+    auto hr = Hyprtoolkit::CRectangleBuilder::begin() //
+                  ->color([this] { return Hyprtoolkit::CHyprColor{m_backend->getPalette()->m_colors.text.darken(0.65)}; })
+                  ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, 9.F}})
+                  ->commence();
+    hr->setMargin(4);
+
+    m_window->m_events.closeRequest.listenStatic([this] {
+        m_window->close();
+        m_backend->destroy();
+    });
+
+    m_window->m_rootElement->addChild(m_background);
+
+    m_background->addChild(m_layout);
+
+    m_layout->addChild(m_tabs.buttonLayout);
+    m_layout->addChild(hr);
+    m_layout->addChild(m_tabs.tabContainer);
+
+    m_tabs.buttonLayout->addChild(m_tabs.nodesButton);
+    m_tabs.buttonLayout->addChild(m_tabs.inputsButton);
+
+    changeTab(0);
+}
+
+void CUI::run() {
+    m_backend->addFd(g_pipewire->getFd(), [] { g_pipewire->dispatch(); });
+
+    m_window->open();
+
+    g_pipewire->dispatch();
+    m_backend->enterLoop();
+}
+
+void CUI::updateNode(WP<CPipewireNode> node) {
+    for (const auto& n : m_tabs.nodesTab.nodeSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        n->setVolume(node->m_volume);
+        n->setMuted(node->m_muted);
+        return;
+    }
+
+    for (const auto& n : m_tabs.inputsTab.inputSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        n->setVolume(node->m_volume);
+        n->setMuted(node->m_muted);
+        return;
+    }
+
+    SP<CNodeVolumeSlider> x;
+
+    if (node->m_mediaClass.starts_with("Audio/Source")) {
+        x = m_tabs.inputsTab.inputSliders.emplace_back(makeShared<CNodeVolumeSlider>(node->m_id, node->m_name));
+        m_tabs.inputsTab.inputsLayout->addChild(x->m_background);
+    } else {
+        x = m_tabs.nodesTab.nodeSliders.emplace_back(makeShared<CNodeVolumeSlider>(node->m_id, node->m_name));
+        m_tabs.nodesTab.nodesLayout->addChild(x->m_background);
+    }
+
+    x->setVolume(node->m_volume);
+    x->setMuted(node->m_muted);
+}
+
+void CUI::nodeRemoved(WP<CPipewireNode> node) {
+    for (const auto& n : m_tabs.nodesTab.nodeSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        m_tabs.nodesTab.nodesLayout->removeChild(n->m_background);
+    }
+
+    for (const auto& n : m_tabs.inputsTab.inputSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        m_tabs.nodesTab.nodesLayout->removeChild(n->m_background);
+    }
+
+    std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return e == node || !e; });
+    std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return e == node || !e; });
+}
+
+void CUI::changeTab(size_t idx) {
+    if (idx == m_tab)
+        return;
+
+    m_tabs.tabContainer->clearChildren();
+
+    m_tab = idx;
+
+    switch (idx) {
+        case 0: m_tabs.tabContainer->addChild(m_tabs.nodesTab.nodesLayout); break;
+        case 1: m_tabs.tabContainer->addChild(m_tabs.inputsTab.inputsLayout); break;
+        default: break;
+    }
+}
