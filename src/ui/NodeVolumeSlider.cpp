@@ -3,10 +3,10 @@
 #include "../pw/PwState.hpp"
 #include <cmath>
 
-constexpr float NODE_BOX_HEIGHT    = 40;
+constexpr float NODE_BOX_HEIGHT    = 50;
 constexpr float NODE_BOTTOM_HEIGHT = 8;
 constexpr float INNER_MARGIN       = 4;
-constexpr float BUTTON_HEIGHT      = 18;
+constexpr float BUTTON_HEIGHT      = 26;
 
 CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_id(id) {
     m_background = Hyprtoolkit::CRectangleBuilder::begin()
@@ -65,13 +65,16 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
     m_muteButton = Hyprtoolkit::CButtonBuilder::begin()
                        ->label("volume_up")
                        ->fontFamily("Material Symbols Outlined")
+                       ->fontSize({Hyprtoolkit::CFontSize::HT_FONT_H3})
                        ->noBorder(true)
                        ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) {
                            setMuted(!m_muted);
                            g_pipewire->setMuted(m_id, m_muted);
                        })
-                       ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, BUTTON_HEIGHT}})
+                       ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {BUTTON_HEIGHT, BUTTON_HEIGHT}})
                        ->commence();
+
+    m_muteButton->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_VCENTER);
 
     m_topLayout->addChild(m_topName);
     m_topLayout->addChild(m_topSpacer);
