@@ -1,4 +1,5 @@
 #include "PwState.hpp"
+#include "PwDevice.hpp"
 #include "../helpers/Log.hpp"
 #include "../ui/UI.hpp"
 
@@ -40,8 +41,8 @@ CPipewireState::CPipewireState(int argc, char** argv) {
     }
 
     m_pwState.registry = pw_core_get_registry(m_pwState.core, PW_VERSION_REGISTRY, 0);
-    spa_zero(m_pwState.registry_listener);
-    pw_registry_add_listener(m_pwState.registry, &m_pwState.registry_listener, &REGISTRY_EVENTS, nullptr);
+    spa_zero(m_pwState.registryListener);
+    pw_registry_add_listener(m_pwState.registry, &m_pwState.registryListener, &REGISTRY_EVENTS, nullptr);
 }
 
 CPipewireState::~CPipewireState() {
@@ -72,6 +73,9 @@ void CPipewireState::onGlobal(uint32_t id, uint32_t permissions, const char* typ
     if (SV == PW_TYPE_INTERFACE_Node) {
         auto x    = m_pwState.nodes.emplace_back(makeShared<CPipewireNode>(id, permissions, type, version, props));
         x->m_self = x;
+    } else if (SV == PW_TYPE_INTERFACE_Device) {
+        auto x    = m_pwState.devices.emplace_back(makeShared<CPipewireDevice>(id, permissions, type, version, props));
+        x->m_self = x;
     }
 }
 
@@ -85,6 +89,7 @@ void CPipewireState::setVolume(uint32_t id, float x) {
             continue;
 
         n->setVolume(x);
+        break;
     }
 }
 
@@ -94,5 +99,16 @@ void CPipewireState::setMuted(uint32_t id, bool x) {
             continue;
 
         n->setMute(x);
+        break;
+    }
+}
+
+void CPipewireState::setMode(uint32_t id, size_t mode) {
+    for (const auto& d : m_pwState.devices) {
+        if (d->m_id != id)
+            continue;
+
+        d->setMode(mode);
+        break;
     }
 }

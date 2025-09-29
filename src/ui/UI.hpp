@@ -13,6 +13,8 @@
 
 class CNodeVolumeSlider;
 class IPwNode;
+class CPipewireDevice;
+class CDeviceConfig;
 
 class CUI {
   public:
@@ -22,7 +24,9 @@ class CUI {
     void run();
 
     void updateNode(WP<IPwNode> node);
+    void updateDevice(WP<CPipewireDevice> node);
     void nodeRemoved(WP<IPwNode> node);
+    void deviceRemoved(WP<CPipewireDevice> node);
 
   private:
     void                                  changeTab(size_t idx);
@@ -41,6 +45,7 @@ class CUI {
         SP<Hyprtoolkit::CButtonElement>    nodesButton;
         SP<Hyprtoolkit::CButtonElement>    inputsButton;
         SP<Hyprtoolkit::CButtonElement>    appsButton;
+        SP<Hyprtoolkit::CButtonElement>    configButton;
 
         struct {
             std::vector<SP<CNodeVolumeSlider>>    nodeSliders;
@@ -56,9 +61,15 @@ class CUI {
             std::vector<SP<CNodeVolumeSlider>>    appSliders;
             SP<Hyprtoolkit::CColumnLayoutElement> appsLayout;
         } appsTab;
+
+        struct {
+            std::vector<SP<CDeviceConfig>>        deviceConfigs;
+            SP<Hyprtoolkit::CColumnLayoutElement> configLayout;
+        } configTab;
     } m_tabs;
 
     friend class CNodeVolumeSlider;
+    friend class CDeviceConfig;
 };
 
 inline UP<CUI> g_ui;

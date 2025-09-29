@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PwNode.hpp"
+#include "PwDevice.hpp"
 #include "IPwNode.hpp"
 
 extern "C" {
@@ -26,18 +27,21 @@ class CPipewireState {
     void setVolume(uint32_t id, float x);
     void setMuted(uint32_t id, bool x);
 
+    void setMode(uint32_t id, size_t mode);
+
     void onGlobal(uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props);
     void onGlobalRemoved(uint32_t id);
 
   private:
     struct {
-        pw_main_loop*            loop;
-        pw_context*              context;
-        pw_core*                 core;
-        pw_registry*             registry;
-        spa_hook                 registry_listener;
+        pw_main_loop*                    loop;
+        pw_context*                      context;
+        pw_core*                         core;
+        pw_registry*                     registry;
+        spa_hook                         registryListener;
 
-        std::vector<SP<IPwNode>> nodes;
+        std::vector<SP<IPwNode>>         nodes;
+        std::vector<SP<CPipewireDevice>> devices;
     } m_pwState;
 
     friend class CPipewireNode;

@@ -1,5 +1,6 @@
 #include "UI.hpp"
 #include "NodeVolumeSlider.hpp"
+#include "DeviceConfig.hpp"
 #include "../pw/PwState.hpp"
 
 using namespace Hyprutils::Math;
@@ -45,6 +46,11 @@ CUI::CUI() {
                                     ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
                                     ->commence();
 
+    m_tabs.configTab.configLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
+                                        ->gap(SMALL_PADDING)
+                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                        ->commence();
+
     m_tabs.nodesButton = Hyprtoolkit::CButtonBuilder::begin()
                              ->label("Nodes")
                              ->noBorder(true)
@@ -65,6 +71,13 @@ CUI::CUI() {
                             ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(0); })
                             ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
                             ->commence();
+
+    m_tabs.configButton = Hyprtoolkit::CButtonBuilder::begin()
+                              ->label("Configuration")
+                              ->noBorder(true)
+                              ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(3); })
+                              ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
+                              ->commence();
 
     auto hr = Hyprtoolkit::CRectangleBuilder::begin() //
                   ->color([this] { return Hyprtoolkit::CHyprColor{m_backend->getPalette()->m_colors.text.darken(0.65)}; })
@@ -88,6 +101,7 @@ CUI::CUI() {
     m_tabs.buttonLayout->addChild(m_tabs.appsButton);
     m_tabs.buttonLayout->addChild(m_tabs.nodesButton);
     m_tabs.buttonLayout->addChild(m_tabs.inputsButton);
+    m_tabs.buttonLayout->addChild(m_tabs.configButton);
 
     changeTab(0);
 }
@@ -168,9 +182,34 @@ void CUI::nodeRemoved(WP<IPwNode> node) {
         m_tabs.appsTab.appsLayout->removeChild(n->m_background);
     }
 
-    std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return e == node || !e; });
-    std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return e == node || !e; });
-    std::erase_if(m_tabs.appsTab.appSliders, [node](const auto& e) { return e == node || !e; });
+    std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+    std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+    std::erase_if(m_tabs.appsTab.appSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+}
+
+void CUI::updateDevice(WP<CPipewireDevice> node) {
+    for (const auto& n : m_tabs.configTab.deviceConfigs) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        n->update(node->m_modes, node->m_currentMode);
+
+        return;
+    }
+
+    auto x = m_tabs.configTab.deviceConfigs.emplace_back(makeShared<CDeviceConfig>(node->m_id, node->m_name, node->m_modes, node->m_currentMode));
+    m_tabs.configTab.configLayout->addChild(x->m_background);
+}
+
+void CUI::deviceRemoved(WP<CPipewireDevice> node) {
+    for (const auto& n : m_tabs.configTab.deviceConfigs) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        m_tabs.configTab.configLayout->removeChild(n->m_background);
+    }
+
+    std::erase_if(m_tabs.configTab.deviceConfigs, [node](const auto& e) { return !e || e->m_id == node->m_id; });
 }
 
 void CUI::changeTab(size_t idx) {
@@ -185,6 +224,7 @@ void CUI::changeTab(size_t idx) {
         case 0: m_tabs.tabContainer->addChild(m_tabs.appsTab.appsLayout); break;
         case 1: m_tabs.tabContainer->addChild(m_tabs.nodesTab.nodesLayout); break;
         case 2: m_tabs.tabContainer->addChild(m_tabs.inputsTab.inputsLayout); break;
+        case 3: m_tabs.tabContainer->addChild(m_tabs.configTab.configLayout); break;
         default: break;
     }
 }
