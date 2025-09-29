@@ -8,6 +8,7 @@
 #include <hyprtoolkit/element/RowLayout.hpp>
 #include <hyprtoolkit/element/Null.hpp>
 #include <hyprtoolkit/element/Button.hpp>
+#include <hyprtoolkit/element/ScrollArea.hpp>
 
 #include "../helpers/Memory.hpp"
 
@@ -39,13 +40,13 @@ class CUI {
     SP<Hyprtoolkit::CColumnLayoutElement> m_layout;
 
     struct {
-        SP<Hyprtoolkit::CRowLayoutElement> buttonLayout;
-        SP<Hyprtoolkit::CNullElement>      tabContainer;
+        SP<Hyprtoolkit::CRowLayoutElement>  buttonLayout;
+        SP<Hyprtoolkit::CScrollAreaElement> tabContainer;
 
-        SP<Hyprtoolkit::CButtonElement>    nodesButton;
-        SP<Hyprtoolkit::CButtonElement>    inputsButton;
-        SP<Hyprtoolkit::CButtonElement>    appsButton;
-        SP<Hyprtoolkit::CButtonElement>    configButton;
+        SP<Hyprtoolkit::CButtonElement>     nodesButton;
+        SP<Hyprtoolkit::CButtonElement>     inputsButton;
+        SP<Hyprtoolkit::CButtonElement>     appsButton;
+        SP<Hyprtoolkit::CButtonElement>     configButton;
 
         struct {
             std::vector<SP<CNodeVolumeSlider>>    nodeSliders;

@@ -28,27 +28,28 @@ CUI::CUI() {
                               ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, 30.F}})
                               ->commence();
 
-    m_tabs.tabContainer = Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})->commence();
+    m_tabs.tabContainer =
+        Hyprtoolkit::CScrollAreaBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1, 10}})->scrollY(true)->commence();
     m_tabs.tabContainer->setGrow(true);
 
     m_tabs.nodesTab.nodesLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
                                       ->gap(SMALL_PADDING)
-                                      ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                      ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})
                                       ->commence();
 
     m_tabs.inputsTab.inputsLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
                                         ->gap(SMALL_PADDING)
-                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})
                                         ->commence();
 
     m_tabs.appsTab.appsLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
                                     ->gap(SMALL_PADDING)
-                                    ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                    ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})
                                     ->commence();
 
     m_tabs.configTab.configLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
                                         ->gap(SMALL_PADDING)
-                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1, 1}})
                                         ->commence();
 
     m_tabs.nodesButton = Hyprtoolkit::CButtonBuilder::begin()
