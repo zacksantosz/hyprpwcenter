@@ -28,8 +28,10 @@ CUI::CUI() {
                               ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, 30.F}})
                               ->commence();
 
-    m_tabs.tabContainer =
-        Hyprtoolkit::CScrollAreaBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1, 10}})->scrollY(true)->commence();
+    m_tabs.tabContainer = Hyprtoolkit::CScrollAreaBuilder::begin()
+                              ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1, 10}})
+                              ->scrollY(true)
+                              ->commence();
     m_tabs.tabContainer->setGrow(true);
 
     m_tabs.nodesTab.nodesLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()

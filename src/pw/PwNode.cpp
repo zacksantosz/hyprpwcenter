@@ -2,6 +2,7 @@
 #include "PwState.hpp"
 #include "../ui/UI.hpp"
 #include "../helpers/Log.hpp"
+#include "PwConstants.hpp"
 
 extern "C" {
 #include <pipewire/pipewire.h>
@@ -48,6 +49,11 @@ static void onNodeParam(void* data, int seq, uint32_t id, uint32_t index, uint32
                 node->m_channelCount = n;
                 node->m_volume       = v[0];
             }
+
+            node->m_deviceBusy = false;
+
+            if (node->m_queuedVolume >= 0.F)
+                node->setVolume(node->m_queuedVolume);
 
             continue;
         }
@@ -114,6 +120,14 @@ CPipewireNode::~CPipewireNode() {
 }
 
 void CPipewireNode::setVolume(float x) {
+    if (std::abs(x - m_volume) < PW_VOLUME_EPSILON)
+        return;
+
+    if (m_deviceBusy) {
+        m_queuedVolume = x;
+        return;
+    }
+
     std::vector<float> volumes;
     volumes.resize(m_channelCount);
     for (size_t i = 0; i < m_channelCount; i++) {
@@ -133,6 +147,9 @@ void CPipewireNode::setVolume(float x) {
     const spa_pod* pod = rc<spa_pod*>(spa_pod_builder_pop(&builder, &object_frame));
 
     pw_node_set_param(m_proxy, SPA_PARAM_Props, 0, pod);
+
+    m_deviceBusy   = true;
+    m_queuedVolume = -1.F;
 }
 
 void CPipewireNode::setMute(bool x) {

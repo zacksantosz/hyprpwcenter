@@ -56,12 +56,16 @@ static void onDeviceParam(void* data, int seq, uint32_t id, uint32_t index, uint
     std::string         desc;
 
     SPA_POD_OBJECT_FOREACH(obj, p) {
-        if (p->key == SPA_PARAM_PROFILE_index)
+        if (p->key == SPA_PARAM_PROFILE_index) {
             spa_pod_get_int(&p->value, &profileIdx);
-        else if (p->key == SPA_PARAM_PROFILE_description) {
+            continue;
+        }
+
+        if (p->key == SPA_PARAM_PROFILE_description) {
             const char* x;
             spa_pod_get_string(&p->value, &x);
             desc = x;
+            continue;
         }
     }
 
