@@ -30,5 +30,5 @@ class CDeviceConfig {
     SP<Hyprtoolkit::CTextElement>         m_topName;
     SP<Hyprtoolkit::CComboboxElement>     m_dropdown;
 
-    bool m_updating = false;
+    bool                                  m_updating = false;
 };

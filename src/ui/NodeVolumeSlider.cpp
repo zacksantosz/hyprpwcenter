@@ -3,7 +3,6 @@
 #include "../pw/PwState.hpp"
 #include <cmath>
 
-constexpr float NODE_BOX_HEIGHT    = 50;
 constexpr float NODE_BOTTOM_HEIGHT = 8;
 constexpr float INNER_MARGIN       = 4;
 constexpr float BUTTON_HEIGHT      = 26;
@@ -16,31 +15,31 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
                        ->borderColor([] { return g_ui->m_backend->getPalette()->m_colors.alternateBase; })
                        ->size({
                            Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT,
-                           Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE,
-                           {1.F, NODE_BOX_HEIGHT},
+                           Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO,
+                           {1.F, 1.F},
                        })
                        ->commence();
 
     m_container = Hyprtoolkit::CNullBuilder::begin()
                       ->size({
-                          Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT,
-                          Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT,
+                          Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO,
+                          Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO,
                           {1.F, 1.F},
                       })
                       ->commence();
     m_container->setMargin(INNER_MARGIN);
 
     m_mainLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
-                       ->gap(10)
+                       ->gap(5)
                        ->size({
                            Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT,
-                           Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT,
+                           Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO,
                            {1.F, 1.F},
                        })
                        ->commence();
 
     m_topLayout =
-        Hyprtoolkit::CRowLayoutBuilder::begin()->gap(10)->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1.F, 1.F}})->commence();
+        Hyprtoolkit::CRowLayoutBuilder::begin()->gap(10)->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {1.F, 1.F}})->commence();
     m_topLayout->setGrow(true);
 
     m_slider = Hyprtoolkit::CSliderBuilder::begin()
