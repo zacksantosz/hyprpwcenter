@@ -91,6 +91,9 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
 CNodeVolumeSlider::~CNodeVolumeSlider() = default;
 
 void CNodeVolumeSlider::setVolume(float v) {
+    if (m_slider->sliding())
+        return;
+
     m_vol = v;
 
     m_settingVolume = true;
