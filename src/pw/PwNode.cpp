@@ -38,6 +38,8 @@ static void onNodeParam(void* data, int seq, uint32_t id, uint32_t index, uint32
     spa_pod_object*     obj = (spa_pod_object*)param;
 
     SPA_POD_OBJECT_FOREACH(obj, p) {
+        Debug::log(LOG, "Node {} -> has prop {}", node->m_name, p->key);
+
         if (p->key == SPA_PROP_channelVolumes) {
             if (spa_pod_is_array(&p->value)) {
                 uint32_t     n = SPA_POD_ARRAY_N_VALUES(&p->value);
@@ -50,18 +52,22 @@ static void onNodeParam(void* data, int seq, uint32_t id, uint32_t index, uint32
             continue;
         }
 
-        // FIXME: this is broken?
-        // if (p->key == SPA_PROP_softMute) {
-        //     if (spa_pod_is_bool(&p->value))
-        //         node->m_muted = SPA_POD_Bool(&p->value);
+        if (p->key == SPA_PROP_volume && node->m_isApp) {
+            if (spa_pod_is_float(&p->value))
+                spa_pod_get_float(&p->value, &node->m_volume);
 
-        //     continue;
-        // }
+            continue;
+        }
+
+        if (p->key == SPA_PROP_softMute) {
+            if (spa_pod_is_bool(&p->value))
+                spa_pod_get_bool(&p->value, &node->m_muted);
+
+            continue;
+        }
     }
 
     g_ui->updateNode(node->m_self);
-
-    Debug::log(ERR, "Node {} has no volume", node->m_name);
 }
 
 static const pw_node_events NODE_EVENTS = {
@@ -70,17 +76,22 @@ static const pw_node_events NODE_EVENTS = {
     .param   = onNodeParam,
 };
 
-CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props) : m_id(id) {
+CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props) {
+    m_id = id;
+
     auto        mc  = prop(props, PW_KEY_MEDIA_CLASS);
     const char* nm  = prop(props, PW_KEY_NODE_NAME);
     const char* dsc = prop(props, PW_KEY_NODE_DESCRIPTION);
     if (!mc)
         return;
-    if (!std::string_view{mc}.starts_with("Audio/"))
+    if (!std::string_view{mc}.starts_with("Audio/") && !std::string_view{mc}.starts_with("Stream/"))
         return;
 
+    if (std::string_view{mc}.starts_with("Stream/"))
+        m_isApp = true;
+
     m_name       = dsc ? dsc : (nm ? nm : "");
-    m_mediaClass = mc;
+    m_mediaClass = mc ? mc : "";
     m_proxy      = sc<pw_node*>(pw_registry_bind(g_pipewire->m_pwState.registry, id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0));
 
     spa_zero(m_listener);

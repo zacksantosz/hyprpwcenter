@@ -1,5 +1,6 @@
 #include "PwState.hpp"
 #include "../helpers/Log.hpp"
+#include "../ui/UI.hpp"
 
 extern "C" {
 #include <pipewire/pipewire.h>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PwNode.hpp"
+#include "IPwNode.hpp"
 
 extern "C" {
 #include <pipewire/pipewire.h>
@@ -30,16 +31,17 @@ class CPipewireState {
 
   private:
     struct {
-        pw_main_loop*                  loop;
-        pw_context*                    context;
-        pw_core*                       core;
-        pw_registry*                   registry;
-        spa_hook                       registry_listener;
+        pw_main_loop*            loop;
+        pw_context*              context;
+        pw_core*                 core;
+        pw_registry*             registry;
+        spa_hook                 registry_listener;
 
-        std::vector<SP<CPipewireNode>> nodes;
+        std::vector<SP<IPwNode>> nodes;
     } m_pwState;
 
     friend class CPipewireNode;
+    friend class CPipewireClient;
     friend class CPipewireDevice;
 };
 

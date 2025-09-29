@@ -6,6 +6,6 @@
 
 using namespace Hyprutils::Memory;
 
-#define SP  CSharedPointer
-#define WP  CWeakPointer
-#define UP  CUniquePointer
+#define SP CSharedPointer
+#define WP CWeakPointer
+#define UP CUniquePointer

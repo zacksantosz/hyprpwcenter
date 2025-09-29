@@ -12,7 +12,7 @@
 #include "../helpers/Memory.hpp"
 
 class CNodeVolumeSlider;
-class CPipewireNode;
+class IPwNode;
 
 class CUI {
   public:
@@ -21,8 +21,8 @@ class CUI {
 
     void run();
 
-    void updateNode(WP<CPipewireNode> node);
-    void nodeRemoved(WP<CPipewireNode> node);
+    void updateNode(WP<IPwNode> node);
+    void nodeRemoved(WP<IPwNode> node);
 
   private:
     void                                  changeTab(size_t idx);
@@ -40,6 +40,7 @@ class CUI {
 
         SP<Hyprtoolkit::CButtonElement>    nodesButton;
         SP<Hyprtoolkit::CButtonElement>    inputsButton;
+        SP<Hyprtoolkit::CButtonElement>    appsButton;
 
         struct {
             std::vector<SP<CNodeVolumeSlider>>    nodeSliders;
@@ -50,6 +51,11 @@ class CUI {
             std::vector<SP<CNodeVolumeSlider>>    inputSliders;
             SP<Hyprtoolkit::CColumnLayoutElement> inputsLayout;
         } inputsTab;
+
+        struct {
+            std::vector<SP<CNodeVolumeSlider>>    appSliders;
+            SP<Hyprtoolkit::CColumnLayoutElement> appsLayout;
+        } appsTab;
     } m_tabs;
 
     friend class CNodeVolumeSlider;

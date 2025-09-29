@@ -40,19 +40,31 @@ CUI::CUI() {
                                         ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
                                         ->commence();
 
+    m_tabs.appsTab.appsLayout = Hyprtoolkit::CColumnLayoutBuilder::begin()
+                                    ->gap(SMALL_PADDING)
+                                    ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
+                                    ->commence();
+
     m_tabs.nodesButton = Hyprtoolkit::CButtonBuilder::begin()
                              ->label("Nodes")
                              ->noBorder(true)
-                             ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(0); })
+                             ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(1); })
                              ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
                              ->commence();
 
     m_tabs.inputsButton = Hyprtoolkit::CButtonBuilder::begin()
                               ->label("Inputs")
                               ->noBorder(true)
-                              ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(1); })
+                              ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(2); })
                               ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
                               ->commence();
+
+    m_tabs.appsButton = Hyprtoolkit::CButtonBuilder::begin()
+                            ->label("Apps")
+                            ->noBorder(true)
+                            ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) { changeTab(0); })
+                            ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1.F, 1.F}})
+                            ->commence();
 
     auto hr = Hyprtoolkit::CRectangleBuilder::begin() //
                   ->color([this] { return Hyprtoolkit::CHyprColor{m_backend->getPalette()->m_colors.text.darken(0.65)}; })
@@ -73,6 +85,7 @@ CUI::CUI() {
     m_layout->addChild(hr);
     m_layout->addChild(m_tabs.tabContainer);
 
+    m_tabs.buttonLayout->addChild(m_tabs.appsButton);
     m_tabs.buttonLayout->addChild(m_tabs.nodesButton);
     m_tabs.buttonLayout->addChild(m_tabs.inputsButton);
 
@@ -88,7 +101,7 @@ void CUI::run() {
     m_backend->enterLoop();
 }
 
-void CUI::updateNode(WP<CPipewireNode> node) {
+void CUI::updateNode(WP<IPwNode> node) {
     for (const auto& n : m_tabs.nodesTab.nodeSliders) {
         if (n->m_id != node->m_id)
             continue;
@@ -107,9 +120,21 @@ void CUI::updateNode(WP<CPipewireNode> node) {
         return;
     }
 
+    for (const auto& n : m_tabs.appsTab.appSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        n->setVolume(node->m_volume);
+        n->setMuted(node->m_muted);
+        return;
+    }
+
     SP<CNodeVolumeSlider> x;
 
-    if (node->m_mediaClass.starts_with("Audio/Source")) {
+    if (node->m_isApp) {
+        x = m_tabs.appsTab.appSliders.emplace_back(makeShared<CNodeVolumeSlider>(node->m_id, node->m_name));
+        m_tabs.appsTab.appsLayout->addChild(x->m_background);
+    } else if (node->m_mediaClass.starts_with("Audio/Source")) {
         x = m_tabs.inputsTab.inputSliders.emplace_back(makeShared<CNodeVolumeSlider>(node->m_id, node->m_name));
         m_tabs.inputsTab.inputsLayout->addChild(x->m_background);
     } else {
@@ -121,7 +146,7 @@ void CUI::updateNode(WP<CPipewireNode> node) {
     x->setMuted(node->m_muted);
 }
 
-void CUI::nodeRemoved(WP<CPipewireNode> node) {
+void CUI::nodeRemoved(WP<IPwNode> node) {
     for (const auto& n : m_tabs.nodesTab.nodeSliders) {
         if (n->m_id != node->m_id)
             continue;
@@ -133,11 +158,19 @@ void CUI::nodeRemoved(WP<CPipewireNode> node) {
         if (n->m_id != node->m_id)
             continue;
 
-        m_tabs.nodesTab.nodesLayout->removeChild(n->m_background);
+        m_tabs.appsTab.appsLayout->removeChild(n->m_background);
+    }
+
+    for (const auto& n : m_tabs.appsTab.appSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        m_tabs.appsTab.appsLayout->removeChild(n->m_background);
     }
 
     std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return e == node || !e; });
     std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return e == node || !e; });
+    std::erase_if(m_tabs.appsTab.appSliders, [node](const auto& e) { return e == node || !e; });
 }
 
 void CUI::changeTab(size_t idx) {
@@ -149,8 +182,9 @@ void CUI::changeTab(size_t idx) {
     m_tab = idx;
 
     switch (idx) {
-        case 0: m_tabs.tabContainer->addChild(m_tabs.nodesTab.nodesLayout); break;
-        case 1: m_tabs.tabContainer->addChild(m_tabs.inputsTab.inputsLayout); break;
+        case 0: m_tabs.tabContainer->addChild(m_tabs.appsTab.appsLayout); break;
+        case 1: m_tabs.tabContainer->addChild(m_tabs.nodesTab.nodesLayout); break;
+        case 2: m_tabs.tabContainer->addChild(m_tabs.inputsTab.inputsLayout); break;
         default: break;
     }
 }
