@@ -15,7 +15,7 @@ class CNodeVolumeSlider {
     CNodeVolumeSlider(uint32_t id, const std::string& name);
     ~CNodeVolumeSlider();
 
-    void                               setVolume(float);
+    void                               setVolume(float, bool force = false);
     void                               setMuted(bool);
 
     SP<Hyprtoolkit::CRectangleElement> m_background;

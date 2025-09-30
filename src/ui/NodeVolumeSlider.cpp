@@ -51,7 +51,7 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
                        if (m_settingVolume)
                            return;
 
-                       setVolume(unlogVolume(val));
+                       setVolume(unlogVolume(val), true);
                        g_pipewire->setVolume(m_id, unlogVolume(val));
                    })
                    ->commence();
@@ -90,8 +90,8 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
 
 CNodeVolumeSlider::~CNodeVolumeSlider() = default;
 
-void CNodeVolumeSlider::setVolume(float v) {
-    if (m_slider->sliding())
+void CNodeVolumeSlider::setVolume(float v, bool force) {
+    if (!force && m_slider->sliding())
         return;
 
     m_vol = v;
