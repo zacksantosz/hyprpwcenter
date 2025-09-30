@@ -2,6 +2,8 @@
 
 #include "PwNode.hpp"
 #include "PwDevice.hpp"
+#include "PwPort.hpp"
+#include "PwLink.hpp"
 #include "IPwNode.hpp"
 
 extern "C" {
@@ -32,6 +34,11 @@ class CPipewireState {
     void onGlobal(uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props);
     void onGlobalRemoved(uint32_t id);
 
+    void addPortToNode(WP<CPipewirePort> port);
+    void checkNodePorts(WP<IPwNode> node);
+
+    void linkOrUnlink(WP<IPwNode> a, WP<IPwNode> b, uint32_t portA, uint32_t portB);
+
   private:
     struct {
         pw_main_loop*                    loop;
@@ -42,11 +49,15 @@ class CPipewireState {
 
         std::vector<SP<IPwNode>>         nodes;
         std::vector<SP<CPipewireDevice>> devices;
+        std::vector<SP<CPipewirePort>>   ports;
+        std::vector<SP<CPipewireLink>>   links;
     } m_pwState;
 
     friend class CPipewireNode;
     friend class CPipewireClient;
     friend class CPipewireDevice;
+    friend class CPipewirePort;
+    friend class CPipewireLink;
 };
 
 inline UP<CPipewireState> g_pipewire;

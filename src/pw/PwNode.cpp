@@ -15,6 +15,7 @@ extern "C" {
 #include <spa/pod/parser.h>
 #include <spa/pod/pod.h>
 #include <spa/pod/builder.h>
+#include <spa/param/audio/raw.h>
 }
 
 static const char* prop(const spa_dict* props, const char* key) {
@@ -39,15 +40,18 @@ static void onNodeParam(void* data, int seq, uint32_t id, uint32_t index, uint32
     spa_pod_object*     obj = (spa_pod_object*)param;
 
     SPA_POD_OBJECT_FOREACH(obj, p) {
-        Debug::log(LOG, "Node {} -> has prop {}", node->m_name, p->key);
 
         if (p->key == SPA_PROP_channelVolumes) {
             if (spa_pod_is_array(&p->value)) {
                 uint32_t     n = SPA_POD_ARRAY_N_VALUES(&p->value);
-                const float* v = (const float*)SPA_POD_ARRAY_VALUES(&p->value);
+                const float* v = rc<const float*>(SPA_POD_ARRAY_VALUES(&p->value));
 
-                node->m_channelCount = n;
-                node->m_volume       = v[0];
+                node->m_volChannels = n;
+
+                if (n == 0)
+                    continue;
+
+                node->m_volume = v[0];
             }
 
             node->m_deviceBusy = false;
@@ -129,8 +133,8 @@ void CPipewireNode::setVolume(float x) {
     }
 
     std::vector<float> volumes;
-    volumes.resize(m_channelCount);
-    for (size_t i = 0; i < m_channelCount; i++) {
+    volumes.resize(m_volChannels);
+    for (size_t i = 0; i < m_volChannels; i++) {
         volumes.at(i) = x;
     }
 

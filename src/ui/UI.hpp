@@ -15,12 +15,16 @@
 class CNodeVolumeSlider;
 class IPwNode;
 class CPipewireDevice;
+class CPipewireLink;
 class CDeviceConfig;
+class CGraphView;
 
 class CUI {
   public:
     CUI();
-    ~CUI() = default;
+    ~CUI();
+
+    void cleanState();
 
     void run();
 
@@ -28,6 +32,8 @@ class CUI {
     void updateDevice(WP<CPipewireDevice> node);
     void nodeRemoved(WP<IPwNode> node);
     void deviceRemoved(WP<CPipewireDevice> node);
+    void updateLink(WP<CPipewireLink> link);
+    void removeLink(WP<CPipewireLink> link);
 
   private:
     void                                  changeTab(size_t idx);
@@ -42,11 +48,13 @@ class CUI {
     struct {
         SP<Hyprtoolkit::CRowLayoutElement>  buttonLayout;
         SP<Hyprtoolkit::CScrollAreaElement> tabContainer;
+        SP<Hyprtoolkit::CNullElement>       tabContainerNoScroll;
 
         SP<Hyprtoolkit::CButtonElement>     nodesButton;
         SP<Hyprtoolkit::CButtonElement>     inputsButton;
         SP<Hyprtoolkit::CButtonElement>     appsButton;
         SP<Hyprtoolkit::CButtonElement>     configButton;
+        SP<Hyprtoolkit::CButtonElement>     graphButton;
 
         struct {
             std::vector<SP<CNodeVolumeSlider>>    nodeSliders;
@@ -67,10 +75,17 @@ class CUI {
             std::vector<SP<CDeviceConfig>>        deviceConfigs;
             SP<Hyprtoolkit::CColumnLayoutElement> configLayout;
         } configTab;
+
+        struct {
+            SP<CGraphView> graphView;
+        } graphTab;
     } m_tabs;
 
     friend class CNodeVolumeSlider;
     friend class CDeviceConfig;
+    friend class CGraphView;
+    friend class CGraphNode;
+    friend class CGraphConnection;
 };
 
 inline UP<CUI> g_ui;

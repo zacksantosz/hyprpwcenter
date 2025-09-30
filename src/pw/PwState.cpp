@@ -3,6 +3,8 @@
 #include "../helpers/Log.hpp"
 #include "../ui/UI.hpp"
 
+#include <algorithm>
+
 extern "C" {
 #include <pipewire/pipewire.h>
 #include <spa/utils/defs.h>
@@ -73,8 +75,16 @@ void CPipewireState::onGlobal(uint32_t id, uint32_t permissions, const char* typ
     if (SV == PW_TYPE_INTERFACE_Node) {
         auto x    = m_pwState.nodes.emplace_back(makeShared<CPipewireNode>(id, permissions, type, version, props));
         x->m_self = x;
+        checkNodePorts(x);
     } else if (SV == PW_TYPE_INTERFACE_Device) {
         auto x    = m_pwState.devices.emplace_back(makeShared<CPipewireDevice>(id, permissions, type, version, props));
+        x->m_self = x;
+    } else if (SV == PW_TYPE_INTERFACE_Port) {
+        auto x    = m_pwState.ports.emplace_back(makeShared<CPipewirePort>(id, permissions, type, version, props));
+        x->m_self = x;
+        addPortToNode(x);
+    } else if (SV == PW_TYPE_INTERFACE_Link) {
+        auto x    = m_pwState.links.emplace_back(makeShared<CPipewireLink>(id, permissions, type, version, props));
         x->m_self = x;
     }
 }
@@ -111,4 +121,44 @@ void CPipewireState::setMode(uint32_t id, size_t mode) {
         d->setMode(mode);
         break;
     }
+}
+
+void CPipewireState::addPortToNode(WP<CPipewirePort> port) {
+    for (const auto& n : m_pwState.nodes) {
+        if (n->m_id != port->m_nodeID)
+            continue;
+
+        if (std::ranges::contains(n->m_ports, port))
+            break;
+
+        n->m_ports.emplace_back(port);
+        port->m_node = n;
+        g_ui->updateNode(n);
+    }
+}
+
+void CPipewireState::checkNodePorts(WP<IPwNode> node) {
+    for (const auto& p : m_pwState.ports) {
+        if (p->m_nodeID != node->m_id)
+            continue;
+
+        if (std::ranges::contains(node->m_ports, p))
+            break;
+
+        node->m_ports.emplace_back(p);
+        g_ui->updateNode(node);
+    }
+}
+
+void CPipewireState::linkOrUnlink(WP<IPwNode> a, WP<IPwNode> b, uint32_t portA, uint32_t portB) {
+    auto it = std::ranges::find_if(
+        m_pwState.links, [a, b, portA, portB](const auto& l) { return l->m_nodeAID == a->m_id && l->m_nodeBID == b->m_id && l->m_portAID == portA && l->m_portBID == portB; });
+
+    if (it != m_pwState.links.end()) {
+        m_pwState.links.erase(it);
+        return;
+    }
+
+    auto x    = m_pwState.links.emplace_back(makeShared<CPipewireLink>(a->m_id, b->m_id, portA, portB));
+    x->m_self = x;
 }
