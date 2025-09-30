@@ -4,7 +4,10 @@
 #include "./graph/Graph.hpp"
 #include "../pw/PwState.hpp"
 
+#include <hyprutils/string/String.hpp>
+
 using namespace Hyprutils::Math;
+using namespace Hyprutils::String;
 
 constexpr float MAIN_PADDING  = 10;
 constexpr float SMALL_PADDING = 6;
@@ -156,30 +159,13 @@ void CUI::run() {
 void CUI::updateNode(WP<IPwNode> node) {
     m_tabs.graphTab.graphView->addNode(node);
 
-    for (const auto& n : m_tabs.nodesTab.nodeSliders) {
-        if (n->m_id != node->m_id)
-            continue;
+    recheckNodeVisibility(node);
 
-        n->setVolume(node->m_volume);
-        n->setMuted(node->m_muted);
-        return;
-    }
+    const auto N = sliderFromNode(node);
 
-    for (const auto& n : m_tabs.inputsTab.inputSliders) {
-        if (n->m_id != node->m_id)
-            continue;
-
-        n->setVolume(node->m_volume);
-        n->setMuted(node->m_muted);
-        return;
-    }
-
-    for (const auto& n : m_tabs.appsTab.appSliders) {
-        if (n->m_id != node->m_id)
-            continue;
-
-        n->setVolume(node->m_volume);
-        n->setMuted(node->m_muted);
+    if (N) {
+        N->setVolume(node->m_volume);
+        N->setMuted(node->m_muted);
         return;
     }
 
@@ -196,8 +182,12 @@ void CUI::updateNode(WP<IPwNode> node) {
         m_tabs.nodesTab.nodesLayout->addChild(x->m_background);
     }
 
+    m_volumeSliders.emplace_back(x);
+
     x->setVolume(node->m_volume);
     x->setMuted(node->m_muted);
+
+    recheckNodeVisibility(node);
 }
 
 void CUI::nodeRemoved(WP<IPwNode> node) {
@@ -227,6 +217,38 @@ void CUI::nodeRemoved(WP<IPwNode> node) {
     std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
     std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
     std::erase_if(m_tabs.appsTab.appSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+    std::erase_if(m_volumeSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+}
+
+void CUI::recheckNodeVisibility(WP<IPwNode> node) {
+    const bool SHOW = !node->m_ports.empty() && (trim(node->m_name) != "" || node->m_volume > 0);
+
+    if (!SHOW) {
+        std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+        std::erase_if(m_tabs.inputsTab.inputSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+        std::erase_if(m_tabs.appsTab.appSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });
+    } else {
+        const auto N = sliderFromNode(node);
+        if (!N)
+            return;
+        if (node->m_isApp)
+            m_tabs.appsTab.appsLayout->addChild(N->m_background);
+        else if (node->m_mediaClass.starts_with("Audio/Source"))
+            m_tabs.inputsTab.inputsLayout->addChild(N->m_background);
+        else
+            m_tabs.nodesTab.nodesLayout->addChild(N->m_background);
+    }
+}
+
+SP<CNodeVolumeSlider> CUI::sliderFromNode(WP<IPwNode> node) {
+    for (const auto& n : m_volumeSliders) {
+        if (n->m_id != node->m_id)
+            continue;
+
+        return n;
+    }
+
+    return nullptr;
 }
 
 void CUI::updateDevice(WP<CPipewireDevice> node) {

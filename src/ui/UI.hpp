@@ -39,6 +39,8 @@ class CUI {
 
   private:
     void                                    changeTab(size_t idx);
+    void                                    recheckNodeVisibility(WP<IPwNode> node);
+    SP<CNodeVolumeSlider>                   sliderFromNode(WP<IPwNode> node);
 
     size_t                                  m_tab = 1337;
 
@@ -49,6 +51,8 @@ class CUI {
 
     SP<Hyprtoolkit::ISystemIconDescription> m_mutedIconHandle;
     SP<Hyprtoolkit::ISystemIconDescription> m_volumeUpIconHandle;
+
+    std::vector<SP<CNodeVolumeSlider>>      m_volumeSliders;
 
     struct {
         SP<Hyprtoolkit::CRowLayoutElement>  buttonLayout;
