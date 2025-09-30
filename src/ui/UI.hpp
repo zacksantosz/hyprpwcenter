@@ -10,6 +10,8 @@
 #include <hyprtoolkit/element/Button.hpp>
 #include <hyprtoolkit/element/ScrollArea.hpp>
 
+#include <hyprtoolkit/system/Icons.hpp>
+
 #include "../helpers/Memory.hpp"
 
 class CNodeVolumeSlider;
@@ -36,14 +38,17 @@ class CUI {
     void removeLink(WP<CPipewireLink> link);
 
   private:
-    void                                  changeTab(size_t idx);
+    void                                    changeTab(size_t idx);
 
-    size_t                                m_tab = 1337;
+    size_t                                  m_tab = 1337;
 
-    SP<Hyprtoolkit::CBackend>             m_backend;
-    SP<Hyprtoolkit::IWindow>              m_window;
-    SP<Hyprtoolkit::CRectangleElement>    m_background;
-    SP<Hyprtoolkit::CColumnLayoutElement> m_layout;
+    SP<Hyprtoolkit::CBackend>               m_backend;
+    SP<Hyprtoolkit::IWindow>                m_window;
+    SP<Hyprtoolkit::CRectangleElement>      m_background;
+    SP<Hyprtoolkit::CColumnLayoutElement>   m_layout;
+
+    SP<Hyprtoolkit::ISystemIconDescription> m_mutedIconHandle;
+    SP<Hyprtoolkit::ISystemIconDescription> m_volumeUpIconHandle;
 
     struct {
         SP<Hyprtoolkit::CRowLayoutElement>  buttonLayout;

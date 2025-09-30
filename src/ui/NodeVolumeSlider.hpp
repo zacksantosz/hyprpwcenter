@@ -7,6 +7,7 @@
 #include <hyprtoolkit/element/ColumnLayout.hpp>
 #include <hyprtoolkit/element/Null.hpp>
 #include <hyprtoolkit/element/Button.hpp>
+#include <hyprtoolkit/element/Image.hpp>
 
 #include "../helpers/Memory.hpp"
 
@@ -32,7 +33,9 @@ class CNodeVolumeSlider {
     SP<Hyprtoolkit::CTextElement>         m_topName;
     SP<Hyprtoolkit::CTextElement>         m_topVol;
     SP<Hyprtoolkit::CSliderElement>       m_slider;
+    SP<Hyprtoolkit::CNullElement>         m_muteButtonContainer;
     SP<Hyprtoolkit::CButtonElement>       m_muteButton;
+    SP<Hyprtoolkit::CImageElement>        m_buttonIcon;
 
     bool                                  m_settingVolume = false;
 

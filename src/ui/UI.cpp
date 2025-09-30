@@ -122,6 +122,14 @@ CUI::CUI() {
     m_tabs.buttonLayout->addChild(m_tabs.configButton);
     m_tabs.buttonLayout->addChild(m_tabs.graphButton);
 
+    m_volumeUpIconHandle = m_backend->systemIcons()->lookupIcon("audio-volume-high");
+    if (!m_volumeUpIconHandle->exists())
+        m_volumeUpIconHandle = m_backend->systemIcons()->lookupIcon("player-volume");
+
+    m_mutedIconHandle = m_backend->systemIcons()->lookupIcon("audio-volume-muted");
+    if (!m_mutedIconHandle->exists())
+        m_mutedIconHandle = m_backend->systemIcons()->lookupIcon("player-volume-muted");
+
     changeTab(0);
 }
 

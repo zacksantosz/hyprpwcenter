@@ -61,23 +61,37 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
     m_topSpacer = Hyprtoolkit::CNullBuilder::begin()->commence();
     m_topSpacer->setGrow(true);
 
+    m_muteButtonContainer = Hyprtoolkit::CNullBuilder::begin()
+                                ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {BUTTON_HEIGHT, BUTTON_HEIGHT}})
+                                ->commence();
+    m_muteButtonContainer->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_VCENTER);
+
     m_muteButton = Hyprtoolkit::CButtonBuilder::begin()
-                       ->label("volume_up")
-                       ->fontFamily("Material Symbols Outlined")
+                       ->label("")
                        ->fontSize({Hyprtoolkit::CFontSize::HT_FONT_H3})
                        ->noBorder(true)
                        ->onMainClick([this](SP<Hyprtoolkit::CButtonElement>) {
                            setMuted(!m_muted);
                            g_pipewire->setMuted(m_id, m_muted);
                        })
-                       ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {BUTTON_HEIGHT, BUTTON_HEIGHT}})
+                       ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
                        ->commence();
 
-    m_muteButton->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_VCENTER);
+    m_muteButton->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_CENTER);
+
+    m_buttonIcon = Hyprtoolkit::CImageBuilder::begin()
+                       ->icon(g_ui->m_volumeUpIconHandle)
+                       ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {0.65, 0.65}})
+                       ->commence();
+
+    m_buttonIcon->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_CENTER);
+
+    m_muteButtonContainer->addChild(m_muteButton);
+    m_muteButtonContainer->addChild(m_buttonIcon);
 
     m_topLayout->addChild(m_topName);
     m_topLayout->addChild(m_topSpacer);
-    m_topLayout->addChild(m_muteButton);
+    m_topLayout->addChild(m_muteButtonContainer);
     m_topLayout->addChild(m_topVol);
 
     m_mainLayout->addChild(m_topLayout);
@@ -106,7 +120,7 @@ void CNodeVolumeSlider::setVolume(float v, bool force) {
 
 void CNodeVolumeSlider::setMuted(bool x) {
     m_muted = x;
-    m_muteButton->rebuild()->label(m_muted ? "volume_off" : "volume_up")->commence();
+    m_buttonIcon->rebuild()->icon(m_muted ? g_ui->m_mutedIconHandle : g_ui->m_volumeUpIconHandle)->commence();
 }
 
 // K constant for logarithmic volume. Can be a matter of taste, but 8 seems alright.
