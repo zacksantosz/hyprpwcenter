@@ -78,6 +78,10 @@ CGraphView::CGraphView() {
         endDrag();
     });
     m_container->setMouseButton([this](Hyprtoolkit::Input::eMouseButton button, bool down) {
+        // this is a fix... before we can do the positioning for the initial nodes
+        // idk how to solve this otherwise atm
+        scheduleUpdateConnections();
+
         if (down) {
             m_posAtStart    = m_lastMousePos;
             m_rawPosAtStart = g_ui->m_window->cursorPos();
@@ -106,8 +110,6 @@ CGraphView::CGraphView() {
         }
     });
     m_container->setRepositioned([this] {
-        scheduleUpdateConnections();
-
         if (!m_needsFirstReposition)
             return;
 
