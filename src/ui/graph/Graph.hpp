@@ -53,7 +53,7 @@ class CGraphView {
     bool                                m_mouseDown = false;
 
     Hyprutils::Math::Vector2D           m_initialPos = {};
-    float                               m_inOffset = 0, m_outOffset = 0, m_ioOffset = 0;
+    std::array<float, 6>                m_columnOffsets;
 
     friend class CGraphNode;
     friend class CGraphConnection;

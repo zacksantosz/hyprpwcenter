@@ -1,4 +1,5 @@
 #include "GraphNode.hpp"
+#include "GraphConnection.hpp"
 #include "Graph.hpp"
 #include "../UI.hpp"
 #include "../../pw/IPwNode.hpp"
@@ -165,14 +166,32 @@ CGraphNode::eNodePolarity CGraphNode::nodePolarity() {
         else
             hasIn = true;
 
-        if (hasIn && hasOut)
-            return NODE_IO;
+        if (hasIn && hasOut) {
+
+            bool hasConnectionIn = false, hasConnectionOut = false;
+
+            for (const auto& c : m_view->m_connections) {
+                if (c->m_a && c->m_a->m_node == m_node)
+                    hasConnectionIn = true;
+                else if (c->m_b && c->m_b->m_node == m_node)
+                    hasConnectionOut = true;
+
+                if (hasConnectionIn && hasConnectionOut)
+                    return NODE_IO;
+            }
+
+            if (hasConnectionIn)
+                return NODE_OUTPUT;
+            if (hasConnectionOut)
+                return NODE_INPUT;
+            return NODE_UNCONNECTED_IO;
+        }
     }
 
     if (hasIn)
-        return NODE_INPUT;
+        return NODE_PURE_OUTPUT;
 
-    return NODE_OUTPUT;
+    return NODE_PURE_INPUT;
 }
 
 Vector2D CGraphNode::size() {

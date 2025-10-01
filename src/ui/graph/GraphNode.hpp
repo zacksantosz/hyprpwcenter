@@ -18,8 +18,11 @@ class CGraphView;
 class CGraphNode {
   public:
     enum eNodePolarity : uint8_t {
+        NODE_PURE_OUTPUT,
         NODE_OUTPUT,
         NODE_IO,
+        NODE_UNCONNECTED_IO,
+        NODE_PURE_INPUT,
         NODE_INPUT,
     };
 
