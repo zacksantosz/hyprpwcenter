@@ -8,6 +8,7 @@
 #include <ranges>
 
 #include <hyprutils/animation/BezierCurve.hpp>
+#include <hyprutils/memory/Atomic.hpp>
 
 using namespace Hyprutils::Math;
 using namespace Hyprutils::Animation;
@@ -78,10 +79,6 @@ CGraphView::CGraphView() {
         endDrag();
     });
     m_container->setMouseButton([this](Hyprtoolkit::Input::eMouseButton button, bool down) {
-        // this is a fix... before we can do the positioning for the initial nodes
-        // idk how to solve this otherwise atm
-        scheduleUpdateConnections();
-
         if (down) {
             m_posAtStart    = m_lastMousePos;
             m_rawPosAtStart = g_ui->m_window->cursorPos();
@@ -125,6 +122,9 @@ CGraphView::CGraphView() {
 
         m_needsFirstReposition = false;
         rearrange();
+
+        // Love it.
+        g_ui->m_backend->addTimer(std::chrono::milliseconds(250), [this](CAtomicSharedPointer<Hyprtoolkit::CTimer>, void*) { rearrange(); }, nullptr);
     });
 
     m_background->addChild(m_scrollArea);
