@@ -183,7 +183,7 @@ void CGraphView::endDrag() {
     m_draggingNode.reset();
 }
 
-constexpr const float COLUMN_GAP  = 400.F;
+constexpr const float COLUMN_GAP  = BUBBLE_WIDTH + 75.F;
 constexpr const float ELEMENT_GAP = 40.F;
 
 //
