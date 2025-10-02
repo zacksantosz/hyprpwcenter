@@ -19,6 +19,7 @@ class CPipewireNode : public IPwNode {
 
     virtual void setVolume(float x);
     virtual void setMute(bool x);
+    virtual bool controllable();
 
     pw_node*     m_proxy = nullptr;
     spa_hook     m_listener;

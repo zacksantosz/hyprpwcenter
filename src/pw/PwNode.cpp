@@ -104,6 +104,8 @@ CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type
     m_mediaClass = mc ? mc : "";
     m_proxy      = sc<pw_node*>(pw_registry_bind(g_pipewire->m_pwState.registry, id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0));
 
+    Debug::log(TRACE, "[pw] node {}: {} of {}", id, m_name, m_mediaClass);
+
     spa_zero(m_listener);
     pw_node_add_listener(m_proxy, &m_listener, &NODE_EVENTS, this);
 
@@ -173,4 +175,8 @@ void CPipewireNode::setMute(bool x) {
 
     m_muted = x;
     g_ui->updateNode(m_self);
+}
+
+bool CPipewireNode::controllable() {
+    return m_proxy;
 }

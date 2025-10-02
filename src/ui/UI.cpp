@@ -161,6 +161,9 @@ void CUI::updateNode(WP<IPwNode> node) {
 
     recheckNodeVisibility(node);
 
+    if (!node->controllable())
+        return;
+
     const auto N = sliderFromNode(node);
 
     if (N) {
@@ -204,7 +207,7 @@ void CUI::nodeRemoved(WP<IPwNode> node) {
         if (n->m_id != node->m_id)
             continue;
 
-        m_tabs.appsTab.appsLayout->removeChild(n->m_background);
+        m_tabs.inputsTab.inputsLayout->removeChild(n->m_background);
     }
 
     for (const auto& n : m_tabs.appsTab.appSliders) {
@@ -221,7 +224,7 @@ void CUI::nodeRemoved(WP<IPwNode> node) {
 }
 
 void CUI::recheckNodeVisibility(WP<IPwNode> node) {
-    const bool SHOW = !node->m_ports.empty() && (trim(node->m_name) != "" || node->m_volume > 0);
+    const bool SHOW = !node->m_ports.empty() && (trim(node->m_name) != "" || node->m_volume > 0) && node->controllable();
 
     if (!SHOW) {
         std::erase_if(m_tabs.nodesTab.nodeSliders, [node](const auto& e) { return !e || e->m_id == node->m_id; });

@@ -284,6 +284,9 @@ void CGraphView::addLink(WP<CPipewireLink> link) {
     auto nodeA = nodeFromID(link->m_nodeAID);
     auto nodeB = nodeFromID(link->m_nodeBID);
 
+    if (!nodeA || !nodeB)
+        return;
+
     auto portA = nodeA->portFromID(link->m_portAID);
     auto portB = nodeB->portFromID(link->m_portBID);
 

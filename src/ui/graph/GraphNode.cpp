@@ -82,9 +82,7 @@ void CGraphNode::update() {
             inputVec.append_range(p->m_channels);
     }
 
-    size_t maxRows = std::max(inputVec.size(), outputVec.size());
-
-    Debug::log(TRACE, "ui: graphnode: max rows {} for {} ports", maxRows, m_node->m_ports.size());
+    size_t      maxRows = std::max(inputVec.size(), outputVec.size());
 
     static auto CHAN_NAME = [](const std::pair<spa_audio_channel, std::string>& p) -> std::string {
         if (p.second.empty())
