@@ -92,6 +92,9 @@ CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type
     auto        mc  = prop(props, PW_KEY_MEDIA_CLASS);
     const char* nm  = prop(props, PW_KEY_NODE_NAME);
     const char* dsc = prop(props, PW_KEY_NODE_DESCRIPTION);
+
+    m_name = dsc ? dsc : (nm ? nm : "");
+
     if (!mc)
         return;
     if (!std::string_view{mc}.starts_with("Audio/") && !std::string_view{mc}.starts_with("Stream/"))
@@ -100,7 +103,6 @@ CPipewireNode::CPipewireNode(uint32_t id, uint32_t permissions, const char* type
     if (std::string_view{mc}.starts_with("Stream/"))
         m_isApp = true;
 
-    m_name       = dsc ? dsc : (nm ? nm : "");
     m_mediaClass = mc ? mc : "";
     m_proxy      = sc<pw_node*>(pw_registry_bind(g_pipewire->m_pwState.registry, id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0));
 
