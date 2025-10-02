@@ -7,7 +7,6 @@
 
 using namespace Hyprutils::Math;
 
-constexpr float BUBBLE_WIDTH    = 200.F;
 constexpr float ANCHOR_WIDTH    = 12.F;
 constexpr float ANCHOR_WIDTH_SQ = ANCHOR_WIDTH * ANCHOR_WIDTH;
 
@@ -181,9 +180,9 @@ CGraphNode::eNodePolarity CGraphNode::nodePolarity() {
             }
 
             if (hasConnectionIn)
-                return NODE_OUTPUT;
-            if (hasConnectionOut)
                 return NODE_INPUT;
+            if (hasConnectionOut)
+                return NODE_OUTPUT;
             return NODE_UNCONNECTED_IO;
         }
     }

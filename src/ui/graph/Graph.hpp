@@ -52,8 +52,10 @@ class CGraphView {
 
     bool                                m_mouseDown = false;
 
-    Hyprutils::Math::Vector2D           m_initialPos = {};
-    std::array<float, 6>                m_columnOffsets;
+    //
+    Hyprutils::Math::Vector2D                                                              m_initialPos = {};
+    std::array<float, 6>                                                                   m_columnOffsets;
+    std::array<std::pair<SP<Hyprtoolkit::CNullElement>, SP<Hyprtoolkit::CTextElement>>, 6> m_columnLabels;
 
     friend class CGraphNode;
     friend class CGraphConnection;

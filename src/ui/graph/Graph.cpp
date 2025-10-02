@@ -127,8 +127,41 @@ CGraphView::CGraphView() {
         g_ui->m_backend->addTimer(std::chrono::milliseconds(250), [this](CAtomicSharedPointer<Hyprtoolkit::CTimer>, void*) { rearrange(); }, nullptr);
     });
 
+    m_columnLabels = std::array<std::pair<SP<Hyprtoolkit::CNullElement>, SP<Hyprtoolkit::CTextElement>>, 6>{
+        std::pair<SP<Hyprtoolkit::CNullElement>, SP<Hyprtoolkit::CTextElement>>{
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Pure Inputs")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+        {
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Active Inputs")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+        {
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Unconnected IO")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+        {
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Active IO")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+        {
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Active Outputs")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+        {
+            Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})->commence(),
+            Hyprtoolkit::CTextBuilder::begin()->text("Pure Outputs")->clampSize({BUBBLE_WIDTH, -1.F})->commence(),
+        },
+    };
+
     m_background->addChild(m_scrollArea);
     m_scrollArea->addChild(m_container);
+    for (const auto& [nl, txt] : m_columnLabels) {
+        nl->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+        nl->addChild(txt);
+        txt->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_HCENTER);
+        m_container->addChild(nl);
+    }
 
     rearrange();
 }
@@ -159,6 +192,10 @@ void CGraphView::rearrange() {
     m_scrollArea->setScroll(m_initialPos - Vector2D{40.F, 40.F});
 
     m_columnOffsets = {20, 20, 20, 20, 20, 20};
+
+    for (size_t i = 0; i < m_columnLabels.size(); ++i) {
+        m_columnLabels[i].first->setAbsolutePosition(m_initialPos + Vector2D{i * COLUMN_GAP, -10.F});
+    }
 
     for (const auto& n : m_nodes) {
         positionNewNode(n);

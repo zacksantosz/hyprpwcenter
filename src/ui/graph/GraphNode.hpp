@@ -15,6 +15,8 @@
 class IPwNode;
 class CGraphView;
 
+constexpr float BUBBLE_WIDTH = 200.F;
+
 class CGraphNode {
   public:
     enum eNodePolarity : uint8_t {
