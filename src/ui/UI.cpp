@@ -14,10 +14,7 @@ constexpr float SMALL_PADDING = 6;
 
 CUI::CUI() {
     m_backend = Hyprtoolkit::CBackend::create();
-    m_window  = m_backend->openWindow(Hyprtoolkit::SWindowCreationData{
-         .title  = "Pipewire Control Center",
-         .class_ = "hyprpwcenter",
-    });
+    m_window  = Hyprtoolkit::CWindowBuilder::begin()->appTitle("Pipewire Control Center")->appClass("hyprpwcenter")->commence();
 
     m_background = Hyprtoolkit::CRectangleBuilder::begin()->color([this] { return m_backend->getPalette()->m_colors.background; })->commence();
 
