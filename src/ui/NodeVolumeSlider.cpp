@@ -56,7 +56,15 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
                    })
                    ->commence();
 
-    m_topName   = Hyprtoolkit::CTextBuilder::begin()->text(std::string{name})->commence();
+    m_topName = Hyprtoolkit::CTextBuilder::begin()->text(std::string{name})->commence();
+
+    m_topRightContainer =
+        Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {75.F, BUTTON_HEIGHT}})->commence();
+    m_topRightLayout =
+        Hyprtoolkit::CRowLayoutBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})->gap(5)->commence();
+    m_topRightSpacer = Hyprtoolkit::CNullBuilder::begin()->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {1, 1}})->commence();
+    m_topRightSpacer->setGrow(true);
+
     m_topVol    = Hyprtoolkit::CTextBuilder::begin()->text(std::format("{}%", sc<int>(logdVolume() * 100.F)))->commence();
     m_topSpacer = Hyprtoolkit::CNullBuilder::begin()->commence();
     m_topSpacer->setGrow(true);
@@ -64,7 +72,8 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
     m_muteButtonContainer = Hyprtoolkit::CNullBuilder::begin()
                                 ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {BUTTON_HEIGHT, BUTTON_HEIGHT}})
                                 ->commence();
-    m_muteButtonContainer->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_VCENTER);
+    m_muteButtonContainer->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+    m_muteButtonContainer->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_VCENTER, true);
 
     m_muteButton = Hyprtoolkit::CButtonBuilder::begin()
                        ->label("")
@@ -77,22 +86,28 @@ CNodeVolumeSlider::CNodeVolumeSlider(uint32_t id, const std::string& name) : m_i
                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {1, 1}})
                        ->commence();
 
-    m_muteButton->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_CENTER);
+    m_muteButton->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+    m_muteButton->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_CENTER, true);
 
     m_buttonIcon = Hyprtoolkit::CImageBuilder::begin()
                        ->icon(g_ui->m_volumeUpIconHandle)
                        ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, Hyprtoolkit::CDynamicSize::HT_SIZE_PERCENT, {0.65, 0.65}})
                        ->commence();
 
-    m_buttonIcon->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_CENTER);
+    m_buttonIcon->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+    m_buttonIcon->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_CENTER, true);
 
     m_muteButtonContainer->addChild(m_muteButton);
     m_muteButtonContainer->addChild(m_buttonIcon);
 
     m_topLayout->addChild(m_topName);
     m_topLayout->addChild(m_topSpacer);
-    m_topLayout->addChild(m_muteButtonContainer);
-    m_topLayout->addChild(m_topVol);
+    m_topLayout->addChild(m_topRightContainer);
+
+    m_topRightContainer->addChild(m_topRightLayout);
+    m_topRightLayout->addChild(m_topRightSpacer);
+    m_topRightLayout->addChild(m_muteButtonContainer);
+    m_topRightLayout->addChild(m_topVol);
 
     m_mainLayout->addChild(m_topLayout);
     m_mainLayout->addChild(m_slider);

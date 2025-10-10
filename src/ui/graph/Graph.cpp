@@ -159,7 +159,8 @@ CGraphView::CGraphView() {
     for (const auto& [nl, txt] : m_columnLabels) {
         nl->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
         nl->addChild(txt);
-        txt->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_HCENTER);
+        txt->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+        txt->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
         m_container->addChild(nl);
     }
 

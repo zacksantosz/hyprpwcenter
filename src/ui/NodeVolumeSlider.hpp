@@ -30,6 +30,9 @@ class CNodeVolumeSlider {
     SP<Hyprtoolkit::CColumnLayoutElement> m_mainLayout;
     SP<Hyprtoolkit::CRowLayoutElement>    m_topLayout;
     SP<Hyprtoolkit::CNullElement>         m_topSpacer;
+    SP<Hyprtoolkit::CNullElement>         m_topRightContainer;
+    SP<Hyprtoolkit::CRowLayoutElement>    m_topRightLayout;
+    SP<Hyprtoolkit::CNullElement>         m_topRightSpacer;
     SP<Hyprtoolkit::CTextElement>         m_topName;
     SP<Hyprtoolkit::CTextElement>         m_topVol;
     SP<Hyprtoolkit::CSliderElement>       m_slider;

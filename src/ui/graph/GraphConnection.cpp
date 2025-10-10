@@ -22,6 +22,8 @@ CGraphConnection::CGraphConnection(WP<CGraphNode> a, size_t portA, WP<CGraphNode
                  ->color([] { return g_ui->m_backend->getPalette()->m_colors.accent; })
                  ->commence();
 
+    m_line->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+
     update();
 }
 
@@ -31,6 +33,8 @@ CGraphConnection::CGraphConnection(WP<CGraphNode> a, size_t portA, const Hypruti
                  ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, {}})
                  ->color([] { return g_ui->m_backend->getPalette()->m_colors.accent; })
                  ->commence();
+
+    m_line->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
 
     update();
 }

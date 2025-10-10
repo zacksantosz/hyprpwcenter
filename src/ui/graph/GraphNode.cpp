@@ -25,10 +25,12 @@ CGraphNode::CGraphNode(WP<IPwNode> node, const Hyprutils::Math::Vector2D& initia
     m_background->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
 
     m_text = Hyprtoolkit::CTextBuilder::begin()->text(std::string{node->m_name})->commence();
-    m_text->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_HCENTER);
+    m_text->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+    m_text->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
 
     m_subtext = Hyprtoolkit::CTextBuilder::begin()->text(std::format("<i>{} ports</i>", node->m_ports.size()))->fontSize({Hyprtoolkit::CFontSize::HT_FONT_SMALL})->commence();
-    m_subtext->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_HCENTER);
+    m_subtext->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+    m_subtext->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_HCENTER, true);
 
     m_layoutInside = Hyprtoolkit::CColumnLayoutBuilder::begin()
                          ->size({Hyprtoolkit::CDynamicSize::HT_SIZE_ABSOLUTE, Hyprtoolkit::CDynamicSize::HT_SIZE_AUTO, {BUBBLE_WIDTH, 1.F}})
@@ -107,10 +109,12 @@ void CGraphNode::update() {
                                       ->commence();
 
             anchor->rightText = Hyprtoolkit::CTextBuilder::begin()->text(CHAN_NAME(outputVec.at(i)))->commence();
-            anchor->rightText->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_RIGHT);
+            anchor->rightText->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+            anchor->rightText->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_RIGHT, true);
             anchor->rightText->setAbsolutePosition({-5.F, 0.F});
 
-            anchor->rightAnchor->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_RIGHT);
+            anchor->rightAnchor->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+            anchor->rightAnchor->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_RIGHT, true);
             anchor->rightAnchor->setAbsolutePosition({ANCHOR_WIDTH, 0.F});
 
             anchor->anchorPad->addChild(anchor->rightAnchor);
@@ -125,10 +129,12 @@ void CGraphNode::update() {
                                      ->commence();
 
             anchor->leftText = Hyprtoolkit::CTextBuilder::begin()->text(CHAN_NAME(inputVec.at(i)))->commence();
-            anchor->leftText->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_LEFT);
+            anchor->leftText->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+            anchor->leftText->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
             anchor->leftText->setAbsolutePosition({5.F, 0.F});
 
-            anchor->leftAnchor->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_LEFT);
+            anchor->leftAnchor->setPositionMode(Hyprtoolkit::IElement::HT_POSITION_ABSOLUTE);
+            anchor->leftAnchor->setPositionFlag(Hyprtoolkit::IElement::HT_POSITION_FLAG_LEFT, true);
             anchor->leftAnchor->setAbsolutePosition({-ANCHOR_WIDTH, 0.F});
 
             anchor->anchorPad->addChild(anchor->leftAnchor);
